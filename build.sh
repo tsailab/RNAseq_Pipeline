@@ -1,7 +1,13 @@
 ###
+### Usage:
+### This script will create all directories, scripts, and 
+### $1 root directory for 
+
+
+
+###
 ### Directories
 ###
-
 rootDir=$1
 fastqDir=${rootDir}/fastq              # project root
 cleanDir=${rootDir}/clean              # fastq files go here
@@ -14,7 +20,6 @@ scriptsDir=${rootDir}/scripts             # scripts get written here
 ###
 ### Make directories
 ###
-
 mkdir -p $rootDir
 mkdir $fastqDir
 mkdir $cleanDir
@@ -27,3 +32,7 @@ mkdir $scriptsDir
 ### Clone NGS clean dir
 ###
 git clone https://github.com/tsailab/NGSclean.git $NGScleanDir
+
+
+###
+### 
