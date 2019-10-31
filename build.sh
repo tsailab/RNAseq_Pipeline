@@ -73,15 +73,64 @@ git clone https://github.com/tsailab/NGSclean.git $NGScleanDir
 
 
 ###
-### Prepare Design File (Run NGSclean) 
+### 2.1 Prepare Design File (Run NGSclean) 
 ###
-touch prep-design-file.sh
-echo "cd ${cleanDir}" >> prep-design-file.sh
-echo "ml Python/3.6.6-foss-2018b" >>  prep-design-file.sh
-echo "python ${NGScleanDir}/generate_design_file.py -f" \
-    >> prep-design-file.sh
-echo -n " ${fastqDir} -d RNAseq_design.txt" \
-    >> prep-design-file.sh
+designFile="${scriptsDir}/01-prep-design-file.sh"
+touch "${designFile}"
+printf "cd ${cleanDir}\n" >> "${designFile}"
+printf "ml Python/3.6.6-foss-2018b\n" >> "${designFile}"
+printf "python ${NGScleanDir}/generate_design_file.py -f" \
+    >> "${designFile}"
+printf " ${fastqDir} -d RNAseq_design.txt" \
+    >> "${designFile}"
 if [[ ${isPaired} -eq 1 ]]; then
-    echo -n " -p" >> prep-design-file.sh  # space before -p
+    printf " -p\n" >> "${designFile}"  # space before -p
 fi
+
+
+###
+### 2.2 Trim and Clean
+###
+
+# Sapelo 2 Settings
+trimmoFull="usr/local/apps/eb/Trimmomatic/0.36-Java-1.8.0_144/trimmomatic-0.36.jar"
+starFull="/usr/local/apps/eb/STAR/2.5.3a-foss-2016b/bin/STAR"
+adaptor="usr/local/apps/eb/Trimmomatic/0.36-Java-1.8.0_144/adapters/TruSeq3-PE.fa"
+trimmo_module="Java/1.8.0_144"
+star_module="STAR/2.5.3a-foss-2016b"
+
+# Run the pipeline
+trimCleanFile="${scriptsDir}/02-trim-and-clean.sh"
+printf "cd ${cleanDir}\n" >> ${trimCleanFile}
+printf "ml Python/3.6.6-foss-2018b" >> ${trimCleanFile}
+printf "${NGScleanDir}/trim_and_clean.py -d RNAseq_design.txt" \
+    >> ${trimCleanFile}
+printf " -t 8 -s merge --run_trimmomatic ${trimmoFull}" \
+    >> ${trimCleanFile}
+printf " --load_trimmo_module ${trimmo_module}" \
+    >> ${trimCleanFile}
+printf " --adaptor ${adaptor}" \
+    >> ${trimCleanFile}
+printf " --run_star ${starFull} --load_star_module ${star_module}\n" \
+    >> ${trimCleanFile}
+
+# submit the jobs
+echo "" >> ${trimCleanFile}
+echo "cd ${cleanWorking}" >> ${trimCleanFile}
+echo "chmod 750 Run_RNAseq_design.sh" >> ${trimCleanFile}
+echo "./Run_RNAseq_design.sh" >> ${trimCleanFile}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
