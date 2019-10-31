@@ -71,3 +71,17 @@ mkdir $scriptsDir
 ###
 git clone https://github.com/tsailab/NGSclean.git $NGScleanDir
 
+
+###
+### Prepare Design File (Run NGSclean) 
+###
+touch prep-design-file.sh
+echo "cd ${cleanDir}" >> prep-design-file.sh
+echo "ml Python/3.6.6-foss-2018b" >>  prep-design-file.sh
+echo "python ${NGScleanDir}/generate_design_file.py -f" \
+    >> prep-design-file.sh
+echo -n " ${fastqDir} -d RNAseq_design.txt" \
+    >> prep-design-file.sh
+if [[ ${isPaired} -eq 1 ]]; then
+    echo -n " -p" >> prep-design-file.sh  # space before -p
+fi
