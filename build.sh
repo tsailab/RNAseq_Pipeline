@@ -111,14 +111,14 @@ mkdir $scriptsDir
 ###
 ### Clone NGS clean dir
 ###
-git clone https://github.com/tsailab/NGSclean.git $NGScleanDir
+#git clone https://github.com/tsailab/NGSclean.git $NGScleanDir
 
 
 ###
 ### Copy genome and annotation
 ###
-cp -r ${genomeOriDir} ${genomeDir}
-cp ${genomeAnnoDir}/*.gtf ${genomeDir}
+#cp -r ${genomeOriDir} ${genomeDir}
+#cp ${genomeAnnoDir}/*.gtf ${genomeDir}
 
 
 ###
@@ -141,9 +141,56 @@ fi
 ### Mapping
 ###
 mapScript=${scriptsDir}/04map.sh
+workingDir=${mapDir}
+dataDir=${cleanDir}
+genome=${genomeDir}
 
+printf "cd $workingDir\n">>$mapScript
+printf "master=\"Shell_master_STAR.sh\"\n">>$mapScript
+printf "printf \"#\"\'!\'/bin/bash\"\\\n\">\$master\n">>$mapScript
+printf "index=0\n">>$mapScript
+printf "for read1 in ${dataDir}/*_clean_1.fq.gz\n">>$mapScript
+printf "do\n">>$mapScript
+printf "    sample=\${read1%%%%_clean_1.fq.gz}\n">>$mapScript
 
+# if paired end reads
+if [ "$isPaired" -eq "1" ]; then
+    printf "    read2=\$sample\"_clean_2.fq.gz\"\n">>$mapScript
+fi
 
+printf "    sampleshort=\${sample##*/}\n">>$mapScript
+printf "    index=\$((\$index+1))\n">>$mapScript
+printf "    sh_worker=\"run\"\$index\"_\"\$sampleshort\".sh\"\n">>$mapScript
+printf "    printf \"qsub \"\$sh_worker\"\\\n\" >>\$master\n">>$mapScript
+printf "    printf \"#\"\'!\'/bin/bash\"\\\n\" >\$sh_worker\n">>$mapScript
+printf "    printf \"#PBS -N star_\"\$sampleshort\"\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \"#PBS -q batch\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \"#PBS -l nodes=1:ppn=12:Intel\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \"#PBS -l walltime=12:00:00\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \"#PBS -l mem=30gb\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \"cd \"\$workingDir\"\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \"ml STAR/2.5.3a-foss-2016b \\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \'/usr/local/apps/eb/STAR/2.5.3a-foss-2016b/bin/STAR \\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \' --runThreadN 12 \\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \' --genomeDir \'\$genome\' --readFilesIn \\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
 
+# if paired end reads
+if [ "$isPaired" -eq "1" ]; then
+    printf "    printf \' \'\$read1\' \'\$read2\' --readFilesCommand gunzip -c\\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
+# else single end reads
+else
+    printf "    printf \' \'\$read1\' --readFilesCommand gunzip -c\\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
+fi
 
-
+printf "    printf \' --outSAMtype BAM SortedByCoordinate \\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \' --outFileNamePrefix \'\$sampleshort\' \\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \' --alignMatesGapMax 20000 \\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \' --alignIntronMax 10000 \\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \' --outFilterScoreMinOverLread 0.1 \\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \' --outFilterMatchNminOverLread 0.1 \'\"\\\n\" >>\$sh_worker\n">>$mapScript
+printf "done\n">>$mapScript
+printf "\n">>$mapScript
+printf "## submit shell script\n">>$mapScript
+printf "chmod 770 Shell_master_STAR.sh\n">>$mapScript
+printf "bash Shell_master_STAR.sh\n">>$mapScript
+printf "\n">>$mapScript
