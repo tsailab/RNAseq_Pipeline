@@ -154,7 +154,7 @@ star_module="STAR/2.5.3a-foss-2016b"
 trimCleanFile="${scriptsDir}/02-trim-and-clean.sh"
 printf "cd ${cleanDir}\n" >> "${trimCleanFile}"
 printf "ml Python/3.6.6-foss-2018b\n" >> "${trimCleanFile}"
-printf "${NGScleanDir}/trim_and_clean.py -d RNAseq_design.txt" \
+printf "python ${NGScleanDir}/trim_and_clean.py -d RNAseq_design.txt" \
     >> "${trimCleanFile}"
 printf " -t 8 -s merge --run_trimmomatic ${trimmoFull}" \
     >> "${trimCleanFile}"
