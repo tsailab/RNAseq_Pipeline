@@ -153,7 +153,7 @@ star_module="STAR/2.5.3a-foss-2016b"
 # Run the pipeline
 trimCleanFile="${scriptsDir}/02-trim-and-clean.sh"
 printf "cd ${cleanDir}\n" >> "${trimCleanFile}"
-printf "ml Python/3.6.6-foss-2018b" >> "${trimCleanFile}"
+printf "ml Python/3.6.6-foss-2018b\n" >> "${trimCleanFile}"
 printf "${NGScleanDir}/trim_and_clean.py -d RNAseq_design.txt" \
     >> "${trimCleanFile}"
 printf " -t 8 -s merge --run_trimmomatic ${trimmoFull}" \
@@ -167,7 +167,6 @@ printf " --run_star ${starFull} --load_star_module ${star_module}\n" \
 
 # Submit the jobs
 printf "\n" >> "${trimCleanFile}"
-printf "cd ${cleanWorking}\n" >> "${trimCleanFile}"
 printf "chmod 750 Run_RNAseq_design.sh\n" >> "${trimCleanFile}"
 printf "./Run_RNAseq_design.sh\n" >> "${trimCleanFile}"
 
