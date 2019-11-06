@@ -173,7 +173,7 @@ printf "./Run_RNAseq_design.sh\n" >> "${trimCleanFile}"
 # Summarize the files when job is done
 summaryFile="${scriptsDir}/03-get-summary.sh"
 printf "cd ${cleanDir}\n" > "${summaryFile}"
-printf "python ${NGScleanDir}/get_trim_sum.py\n" >> "${summaryFile}"
+printf "python ${NGScleanDir}/get_trim_sum.py\n ${cleanDir}" >> "${summaryFile}"
 
 
 
