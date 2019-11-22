@@ -146,7 +146,17 @@ fi
 # Sapelo 2 Settings
 trimmoFull="usr/local/apps/eb/Trimmomatic/0.36-Java-1.8.0_144/trimmomatic-0.36.jar"
 starFull="/usr/local/apps/eb/STAR/2.5.3a-foss-2016b/bin/STAR"
-adaptor="usr/local/apps/eb/Trimmomatic/0.36-Java-1.8.0_144/adapters/TruSeq3-PE.fa"
+
+# if paired end reads
+if [ "$isPaired" -eq "1" ]; then
+    adaptor="/usr/local/apps/eb/Trimmomatic/0.36-Java-1.8.0_144/adapters/TruSeq3-PE.fa"
+fi
+
+# if single end reads
+if [ "$isPaired" -eq "0" ]; then
+    adaptor="/usr/local/apps/eb/Trimmomatic/0.36-Java-1.8.0_144/adapters/TruSeq3-SE.fa"
+fi
+
 trimmo_module="Java/1.8.0_144"
 star_module="STAR/2.5.3a-foss-2016b"
 
@@ -173,7 +183,7 @@ printf "./Run_RNAseq_design.sh\n" >> "${trimCleanFile}"
 # Summarize the files when job is done
 summaryFile="${scriptsDir}/03-get-summary.sh"
 printf "cd ${cleanDir}\n" > "${summaryFile}"
-printf "python ${NGScleanDir}/get_trim_sum.py\n ${cleanDir}" >> "${summaryFile}"
+printf "python ${NGScleanDir}/get_trim_sum.py ${cleanDir}" >> "${summaryFile}"
 
 
 
@@ -187,6 +197,7 @@ dataDir=${cleanDir}
 genome=${genomeDir}
 
 printf "cd $workingDir\n">$mapScript
+printf "workingDir=\"${workingDir}\"\n">>$mapScript
 printf "master=\"Shell_master_STAR.sh\"\n">>$mapScript
 printf "printf \"#\"\'!\'/bin/bash\"\\\n\">\$master\n">>$mapScript
 printf "index=0\n">>$mapScript
@@ -213,7 +224,7 @@ printf "    printf \"cd \"\$workingDir\"\\\n\" >>\$sh_worker\n">>$mapScript
 printf "    printf \"ml STAR/2.5.3a-foss-2016b \\\n\" >>\$sh_worker\n">>$mapScript
 printf "    printf \'/usr/local/apps/eb/STAR/2.5.3a-foss-2016b/bin/STAR \\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
 printf "    printf \' --runThreadN 12 \\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
-printf "    printf \' --genomeDir \'\$genome\' --readFilesIn \\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
+printf "    printf \' --genomeDir \'${genomeDir}\' --readFilesIn \\\\\\\'\"\\\n\" >>\$sh_worker\n">>$mapScript
 
 # if paired end reads
 if [ "$isPaired" -eq "1" ]; then
